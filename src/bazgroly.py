@@ -1,9 +1,8 @@
-#from seaborn import heatmap
-#from pandas import read_csv
-#from matplotlib.pyplot import show
-
 from tkinter import *
 from tkinter import filedialog
+import seaborn as sbn
+import pandas as pd
+import matplotlib.pyplot as plt
 
 a= Tk()
 a.title('Wizualizacja plików .csv')
@@ -24,11 +23,11 @@ def poka():
     filetypes=(('pliki csv', '*.csv'), ('wszystkie pliki', '*.*'))
     plik1 = filedialog.askopenfile(filetypes=filetypes)
     
-    #dataset = read_csv(plik1, sep=';', index_col=0)
-    #dataset = sbn.load_dataset("glue").pivot("Model", "Task", "Score")
-    #print(dataset)
-    #heatmap(dataset)
-    #show()
+    dataset = pd.read_csv(plik1, sep=';', index_col=0)
+    dataset = sbn.load_dataset("glue").pivot("Model", "Task", "Score")
+    print(dataset)
+    sbn.heatmap(dataset)
+    plt.show()
 
 buton1 = Button(a, text="wybierz plik",width=160,height=32,command=poka)
 img1=PhotoImage(file="przycisk1.png")
