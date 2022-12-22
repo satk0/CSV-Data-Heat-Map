@@ -23,6 +23,7 @@ async def main():
 
 
     async with aiofiles.open(args.fname, 'w+') as f:
+        await f.write('cr;')
         for colNum in range(cols-1):
             await f.write('c{colNum};'.format(colNum=colNum))
         await f.write('c{colNum}'.format(colNum=cols-1))
@@ -31,8 +32,8 @@ async def main():
         for rowNum in range(rows):
             await f.write('r{rowNum};'.format(rowNum=rowNum))
             for colNum in range(cols-1):
-                await f.write('{};'.format(round(random.uniform(1, 10), 3))) 
-            await f.write('{}'.format(round(random.uniform(1, 10), 3))) 
+                await f.write('{};'.format(round(random.uniform(1, 30), 3))) 
+            await f.write('{}'.format(round(random.uniform(1, 30), 3))) 
             await f.write('\n')
 #    for colNum in range(cols):
 
