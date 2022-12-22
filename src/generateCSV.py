@@ -4,6 +4,7 @@ import argparse
 import random
 import aiofiles
 import asyncio
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description="Generate 2D array of random numbers to CSV file")
 parser.add_argument('-m', type=str, dest='m',
@@ -29,7 +30,7 @@ async def main():
         await f.write('c{colNum}'.format(colNum=cols-1))
 
         await f.write('\n')
-        for rowNum in range(rows):
+        for rowNum in tqdm(range(rows),desc="Loading...", ascii=True):
             await f.write('r{rowNum};'.format(rowNum=rowNum))
             for colNum in range(cols-1):
                 await f.write('{};'.format(round(random.uniform(1, 30), 3))) 

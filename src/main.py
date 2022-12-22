@@ -96,13 +96,20 @@ def average_data(fname: str, nrows: int, ncols: int):
             averaged[tmp_index] = list(map(add, averaged[tmp_index], rnums))
 
             
-        
+    for i in range(len(averaged) - 1):
+        for j in range(len(averaged[i]) - 1):
+            averaged[i][j] /= COMMON
     
+    # ZROBIĆ TO W NUMPY !!!!!
     #print("center:")
+    '''
     center = [row[:-1] for row in averaged[:-1]]
     center = list(map(lambda x: list(map(lambda y: y/COMMON, x)), center))
+    '''
     #print(center)
             
+
+    '''
     left_down = averaged[-1][:-1]
     #print("REM ROW DIVIDER = ", REM_ROW_DIVIDER)
     left_down = list(map(lambda x: x/REM_ROW_DIVIDER, left_down))
@@ -121,7 +128,9 @@ def average_data(fname: str, nrows: int, ncols: int):
     right_down = right_down/REM_CR_DIVIDER
     #print(right_down)
 
+    '''
 
+    '''
     new_avereged = center 
 
     for i in range(len(new_avereged)):
@@ -135,6 +144,7 @@ def average_data(fname: str, nrows: int, ncols: int):
     #print(new_avereged)
 
     return new_avereged
+    '''
 
 
 
