@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import re
 from math import ceil
 from operator import add
+from pprint import pprint
 
 MAX_COLS = 30
 MAX_ROWS = 30
@@ -96,55 +97,23 @@ def average_data(fname: str, nrows: int, ncols: int):
             averaged[tmp_index] = list(map(add, averaged[tmp_index], rnums))
 
             
+            
+    # main
     for i in range(len(averaged) - 1):
         for j in range(len(averaged[i]) - 1):
             averaged[i][j] /= COMMON
-    
-    # ZROBIĆ TO W NUMPY !!!!!
-    #print("center:")
-    '''
-    center = [row[:-1] for row in averaged[:-1]]
-    center = list(map(lambda x: list(map(lambda y: y/COMMON, x)), center))
-    '''
-    #print(center)
-            
 
-    '''
-    left_down = averaged[-1][:-1]
-    #print("REM ROW DIVIDER = ", REM_ROW_DIVIDER)
-    left_down = list(map(lambda x: x/REM_ROW_DIVIDER, left_down))
-    #print("left_down")
-    #print(left_down)
+    #left_down
+    for j in range(len(averaged[-1]) - 1):
+        averaged[-1][j] /= REM_ROW_DIVIDER
+    #right_up 
+    for i in range(len(averaged) - 1):
+        averaged[i][-1] /= REM_COL_DIVIDER
+    # right_down
+    print("averaged[-1][-1]", averaged[-1][-1])
+    averaged[-1][-1] /= REM_CR_DIVIDER
 
-    right_up = [row[-1] for row in averaged[:-1]]
-
-    #print("right_up")
-    right_up = list(map(lambda x: x/REM_COL_DIVIDER, right_up))
-    #print(right_up)
-
-    right_down = averaged[-1][-1]
-
-    #print("right_down")
-    right_down = right_down/REM_CR_DIVIDER
-    #print(right_down)
-
-    '''
-
-    '''
-    new_avereged = center 
-
-    for i in range(len(new_avereged)):
-        new_avereged[i].append(right_up[i]) 
-
-    lower = left_down
-    lower.append(right_down)
-    new_avereged.append(lower) 
-    
-    print("new_avereged")
-    #print(new_avereged)
-
-    return new_avereged
-    '''
+    return averaged
 
 
 
@@ -186,10 +155,10 @@ class HeatMapHandler:
             dataset = pd.DataFrame(series_list)
 
 #dataset = sbn.load_dataset("glue").pivot("Model", "Task", "Score")
-            print(dataset)
-            sbn.heatmap(dataset)
+        print(dataset)
+        sbn.heatmap(dataset)
 
-            plt.show()
+        plt.show()
 
 heatmap = HeatMapHandler()
-heatmap.drawHeatMap("500_0_30.csv")
+heatmap.drawHeatMap("300.csv")
