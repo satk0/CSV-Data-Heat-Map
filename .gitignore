@@ -3,3 +3,5 @@ bigdata
 venv
 run*
 10000*
+__pycache__
+csv_processor*
