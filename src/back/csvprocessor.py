@@ -7,8 +7,8 @@ class CSVProcessor:
 
     MAX_ROWS = 30
     MAX_COLS = 30
-
-    def __init__(self, fname, limits = []):
+                                           # self.r_agr, self.r_rem, self.c_agr, self.c_rem
+    def __init__(self, fname, limits = [], prev_params = []):
         self.nrows = 0
         self.ncols = 0
         self.r_agr = 1
@@ -20,37 +20,66 @@ class CSVProcessor:
         self.fname = fname
         self.limits = limits
 
+        if prev_params:
+            self.r_agr = prev_params[0]
+            self.r_rem = prev_params[1]
+            self.c_agr = prev_params[2]
+            self.c_rem = prev_params[3]
 
         if len(fname.split('/\\')) != 1:
             cur_path = str(pathlib.Path(__file__).parent.absolute())
             fname = cur_path + '/' + fname 
 
-        print("test:")
-        print(fname)
         self._preprocess(fname)
 
     def _preprocess(self, fname: str):
-        self.res = pd.read_csv(fname,
-                          sep=';',
-                          dtype=np.float16,
-                          index_col=0,
-                          engine='c' 
-                          )
 
-        print("self.limits:")
-        print(self.limits)
+        #print("self.limits:")
+        #print(self.limits)
+
+        min_rows = None
+        max_rows = None
+        max_cols = 0
+
         if self.limits:
-            self.res = pd.read_csv(fname,
-                              sep=';',
-                              dtype=np.float16,
-                              index_col=0,
-                              skiprows=self.limits[0],
-                              nrows=self.limits[1] - self.limits[0],
-                              engine='c')
+            
+            min_rows = self.limits[0] * self.r_agr
+            max_rows  = (self.limits[1] - 1) * self.r_agr
+            if self.limits[1] == self.tr_nrows and self.r_rem:
+                max_rows += self.r_rem 
+            else:
+                max_rows += self.r_agr
 
+            max_cols  = (self.limits[3] - 1) * self.c_agr
+
+            if self.limits[3] == self.tr_ncols and self.c_rem:
+                max_cols += self.c_rem
+            else:
+                max_cols += self.c_agr
+
+                
+        #print("min_rows:", min_rows)
+        #print("max_rows:", max_rows)
+
+        self.res = pd.read_csv(fname,
+              sep=';',
+              dtype=np.float16,
+              index_col=0,
+              skiprows=min_rows,
+              nrows=max_rows,
+              engine='c')
+
+
+        if self.limits:
+            #print("min_cols:", self.limits[2] * self.c_agr)
+            #print("max_cols:", max_cols)
             self.res = self.res.reset_index(drop = True)
-            self.res = self.res.iloc[:, slice(self.limits[2], self.limits[3])]
+            self.res = self.res.iloc[:, slice(self.limits[2] * self.c_agr, max_cols)]
+            # check if last col
             self.res.columns = range(self.res.columns.size)
+
+        #print("self.res")
+        #print(self.res)
                               
 
         #print("self.res")
@@ -63,8 +92,10 @@ class CSVProcessor:
 
         self._sum(ifrows, ifcols) 
         self._mean(ifrows, ifcols)
-        print("self.res")
-        print(self.res)
+
+    
+    def get_params(self):
+        return [self.r_agr, self.r_rem, self.c_agr, self.c_rem]
 
     def _sum(self, ifrows, ifcols):
         if ifrows:

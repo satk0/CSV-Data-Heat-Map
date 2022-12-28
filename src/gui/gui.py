@@ -16,7 +16,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import pathlib
 
-from math import ceil
+from math import ceil, floor
 
 class App(tk.Tk):
     def __init__(self):
@@ -28,46 +28,60 @@ class App(tk.Tk):
         self.fname = ''
 
         self.origin = [0, 0]
-        self.title('CSV Heat Map')
-        self.geometry('1000x700')
         
         # graph width and height in pixels
         self.graph_mes = [600, 600]
         #                   x0  y0   x1  y1
         self.graph_rect = [0.1, 0.1, 0.8, 0.95]
-        #self.graph_rect = [0.1, 0.1, .8, .8]
 
+        self.prev_csv_procs = []
+
+        self.title('CSV Heat Map')
+        self.geometry('1000x700')
+
+        # Frames
         self.graph_frame = Frame(self, width = self.graph_mes[0], height = self.graph_mes[1])
         self.graph_frame.grid(row=0, column=0)
+
+        self.graph_tool_frame = Frame(self, width = 100, height = 100)
+        self.graph_tool_frame.grid(row=1, column=0)
+
         self.toolbar_frame = Frame(self, width = 200, height = 700)
         self.toolbar_frame.grid(row=0, column=1)
         
-        # label
-        self.label = ttk.Label(self.toolbar_frame, text='')
-        self.label.grid(row = 0, column = 0)
+        # labels
+        self.fname_label = ttk.Label(self.toolbar_frame, text='')
+        self.fname_label.grid(row = 0, column = 0)
         self.info_label = ttk.Label(self.toolbar_frame, text='')
         self.info_label.grid(row = 2, column = 0)
 
-        # button
-        self.button = ttk.Button(self.toolbar_frame, text='Załaduj plik')
-        self.button['command'] = self.button_clicked
-        self.button.grid(row = 1, column = 0)
+        # buttons
+        self.load_button = ttk.Button(self.toolbar_frame, text='Załaduj plik')
+        self.load_button['command'] = self.button_clicked
+        self.load_button.grid(row = 1, column = 0)
+
+        self.back_button = ttk.Button(self.graph_tool_frame, text='Cofnij', command=self.back_csv_proc)
+
 
 
     def mouse_pressed(self, event):
         self.pressed = True
 
     def mouse_released(self, event):
-        print("final pos")
-        print(self.pos)
+        
+        rect_y = [self.rect_oy, self.rect_oy + self.rect_height]
+        min_rows, max_rows = floor(min(rect_y)), ceil(max(rect_y))
+        rect_x = [self.rect_ox, self.rect_ox + self.rect_width]
+        min_cols, max_cols = floor(min(rect_x)), ceil(max(rect_x))
+
         self.load_heatmap(
                 self.fname,
                 [
-                    int(ceil(self.rect_oy)), int(ceil(self.rect_oy + self.rect_height)),
-                    int(ceil(self.rect_ox)), int(ceil(self.rect_ox + self.rect_width))
-                ]
+                    min_rows, max_rows,
+                    min_cols, max_cols
+                ],
+                self.csv_processor.get_params()
         )
-        self.heatmap_info()
 
         self.origin = [0, 0]
         self.pressed = False
@@ -90,17 +104,34 @@ class App(tk.Tk):
         self.load_heatmap(fname)
 
 
-        self.heatmap_info()
+        self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + fname
+        #self.back_button['text'] = "Cofnij"
         
-                                # [rmin, rmax, cmin, cmax]
-    def load_heatmap(self, fname, limits = []):
+    def back_csv_proc(self):
+        self.load_heatmap(fname = self.fname, back = True)
+                                # [rmin, rmax, cmin, cmax] # [r_agr, r_rem, c_agr, c_rem]
+    def load_heatmap(self, fname, limits = [], prev_params = [], back = False):
 
         if self.fname != '':
             for widgets in self.graph_frame.winfo_children():
                   widgets.destroy()
 
         self.fname = fname
-        self.csv_processor = CSVProcessor(self.fname, limits)
+
+        if not back:
+            self.csv_processor = CSVProcessor(self.fname, limits, prev_params)
+            self.prev_csv_procs.append(self.csv_processor)
+        else:
+            del self.prev_csv_procs[-1]
+            self.csv_processor = self.prev_csv_procs[-1]
+
+        if len(self.prev_csv_procs) > 1:
+            self.back_button.grid(row = 0, column = 0)
+        else:
+            self.back_button.grid_forget() 
+
+        print("self.prev_csv_procs")
+        print(self.prev_csv_procs)
 
         self._create_figure()
 
@@ -112,6 +143,7 @@ class App(tk.Tk):
         self.figure_canvas.get_tk_widget().bind('<ButtonRelease-1>', self.mouse_released)
         self.figure_canvas.get_tk_widget().bind('<Motion>', self._mouse_hold)
 
+        self.heatmap_info()
 
 
     def _mouse_hold(self, event):
@@ -141,9 +173,6 @@ class App(tk.Tk):
 
 
     def mouse_selection(self):
-
-        print("ncols:", self.csv_processor.tr_ncols)
-        print("nrows:", self.csv_processor.tr_nrows)
 
         self.rect_ox = self.csv_processor.tr_ncols * (self.origin[0] - self.graph_rect[0] * self.graph_mes[0]) 
         self.rect_ox /= ((self.graph_rect[2] - self.graph_rect[0]) * self.graph_mes[0])
