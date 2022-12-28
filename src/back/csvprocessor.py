@@ -8,18 +8,23 @@ class CSVProcessor:
     MAX_ROWS = 30
     MAX_COLS = 30
 
-    def __init__(self, fname):
+    def __init__(self, fname, limits = []):
         self.nrows = 0
         self.ncols = 0
-        self.r_agr = 0
-        self.c_agr = 0
-        self.r_rem = 0
-        self.c_rem = 0
+        self.r_agr = 1
+        self.c_agr = 1
+        self.r_rem = 1
+        self.c_rem = 1
+        self.tr_nrows = 0
+        self.tr_ncols = 0
         self.fname = fname
+        self.limits = limits
 
 
-        cur_path = str(pathlib.Path(__file__).parent.absolute())
-        fname = cur_path + '/' + fname 
+        if len(fname.split('/\\')) != 1:
+            cur_path = str(pathlib.Path(__file__).parent.absolute())
+            fname = cur_path + '/' + fname 
+
         print("test:")
         print(fname)
         self._preprocess(fname)
@@ -32,13 +37,34 @@ class CSVProcessor:
                           engine='c' 
                           )
 
+        print("self.limits:")
+        print(self.limits)
+        if self.limits:
+            self.res = pd.read_csv(fname,
+                              sep=';',
+                              dtype=np.float16,
+                              index_col=0,
+                              skiprows=self.limits[0],
+                              nrows=self.limits[1] - self.limits[0],
+                              engine='c')
+
+            self.res = self.res.reset_index(drop = True)
+            self.res = self.res.iloc[:, slice(self.limits[2], self.limits[3])]
+            self.res.columns = range(self.res.columns.size)
+                              
+
+        #print("self.res")
+        #print(self.res)
+
         self.nrows, self.ncols = self.res.shape
 
-        ifrows = self.nrows < self.MAX_ROWS
-        ifcols = self.ncols < self.MAX_COLS
+        ifrows = self.nrows > self.MAX_ROWS
+        ifcols = self.ncols > self.MAX_COLS
 
         self._sum(ifrows, ifcols) 
         self._mean(ifrows, ifcols)
+        print("self.res")
+        print(self.res)
 
     def _sum(self, ifrows, ifcols):
         if ifrows:
@@ -59,9 +85,10 @@ class CSVProcessor:
 
         # Spaghetti code
         if not ifrows and not ifcols:
+            self.tr_nrows, self.tr_ncols = self.nrows, self.ncols
             return
 
-        r, c = self.res.shape
+        self.tr_nrows, self.tr_ncols = r, c = self.res.shape
 
         common_dividor = self.r_agr * self.c_agr
         rt_dividor = common_dividor
@@ -104,4 +131,5 @@ class CSVProcessor:
 #npmain = NpMain(fname)
 #npmain.show()
 #print("agr: r -", r_agr, " -c- ", c_agr)
+
 
