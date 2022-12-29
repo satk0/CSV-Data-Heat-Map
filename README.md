@@ -1,1 +1,18 @@
-# CSV-Data-Heat-Map
+<h1 align='center'>
+    CSV-Data-Heat-Map
+</h1>
+
+The really basic CSV Data to Heat Map Converter.
+
+# To run:
+
+1. `py install -r requirements.txt`
+2. `py src/gui/gui.py`
+
+# Screenshots:
+
+![Covid-19 New Cases CSV Heat Map](/repository/screenshots/new_covid_cases.png?raw=true "Covid-19 New Cases Data (from 2020 to 2022)")
+
+Analyzing the data, we could see that the peak of the cases was in January 2022, while the most affected countries were Denmark, Czechia, Germany and the Europe as a whole.
+
+Of course, this app is just in completely beta-state. Honestly, it is not even beta. So be aware of a lot of bugs and untrustworthy functionality of the app.
