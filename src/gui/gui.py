@@ -30,7 +30,7 @@ class App(tk.Tk):
         self.origin = [0, 0]
         
         # graph width and height in pixels
-        self.graph_mes = [600, 600]
+        self.graph_mes = [700, 600]
         #                   x0  y0   x1  y1
         self.graph_rect = [0.1, 0.1, 0.8, 0.95]
 
@@ -106,6 +106,9 @@ class App(tk.Tk):
         if not fname: return
         if fname == self.fname: return 
         
+        # reset previous processors
+        self.prev_csv_procs = []
+
         self.load_heatmap(fname)
 
 
@@ -233,7 +236,7 @@ class App(tk.Tk):
         self.info_label.config(text = mtext)
 
     def _create_figure(self):
-        self.figure = Figure(figsize=(6, 6), dpi=100)
+        self.figure = Figure(figsize=(self.graph_mes[0]/100, self.graph_mes[1]/100), dpi=100)
         # create axes
         ax_rect = self.graph_rect.copy()
         ax_rect[2] -= ax_rect[0]
@@ -244,9 +247,9 @@ class App(tk.Tk):
         print("rect:", self.graph_rect[2])
         colorbar_ax = self.figure.add_axes(
                 [
-                    self.graph_rect[2] + 0.05, 
+                    self.graph_rect[2] + 0.02, 
                     self.graph_rect[1],
-                    0.05, 
+                    0.08, 
                     self.graph_rect[3] - self.graph_rect[1]
                  ]
         )

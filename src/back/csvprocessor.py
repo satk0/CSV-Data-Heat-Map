@@ -66,21 +66,26 @@ class CSVProcessor:
 
         self.res = pd.read_csv(fname,
               sep=';',
-              dtype=np.float16,
+              #dtype=np.float16,
               index_col=0,
               skiprows=min_rows,
               nrows=max_rows,
               engine='c')
 
+        #self.res = self.res.dropna() 
+        print("self.res")
+        print(self.res)
+
+        self.res = self.res.reset_index(drop = True)
 
         if self.limits:
-            #print("min_cols:", self.limits[2] * self.c_agr)
-            #print("max_cols:", max_cols)
-            self.res = self.res.reset_index(drop = True)
             self.res = self.res.iloc[:, slice(self.limits[2] * self.c_agr, max_cols)]
-            # check if last col
-            self.res.columns = range(self.res.columns.size)
 
+        self.res.columns = range(self.res.columns.size)
+
+
+        print("self.res")
+        print(self.res)
         #print("self.res")
         #print(self.res)
                               
@@ -145,6 +150,8 @@ class CSVProcessor:
             rt_dividor = self.c_rem * self.r_agr
 
         for i in range(r - 1):
+            print("self.res.values[i]")
+            print(self.res.values[i])
             self.res.values[i][-1] /= rt_dividor
 
         # left bottom
