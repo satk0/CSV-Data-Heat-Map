@@ -71,9 +71,14 @@ class App(tk.Tk):
         
         rect_y = [self.rect_oy, self.rect_oy + self.rect_height]
         min_rows, max_rows = floor(min(rect_y)), ceil(max(rect_y))
+        print("min_rows, max_rows:")
+        print(min_rows, max_rows)
+        
         rect_x = [self.rect_ox, self.rect_ox + self.rect_width]
         min_cols, max_cols = floor(min(rect_x)), ceil(max(rect_x))
 
+        print("min_cols, max_cols")
+        print(min_cols, max_cols)
         self.load_heatmap(
                 self.fname,
                 [
@@ -258,6 +263,7 @@ class App(tk.Tk):
         
 
 
+# ODWROCIC Y
 
 # JAK OGARNAC ZEBY SIE NIE DODAWALY WYKRESY NIE POTRZEBNIEEE ! ! ! ! ! !
 if __name__ == "__main__":

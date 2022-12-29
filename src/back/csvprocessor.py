@@ -45,6 +45,7 @@ class CSVProcessor:
             
             min_rows = self.limits[0] * self.r_agr
             max_rows  = (self.limits[1] - 1) * self.r_agr
+
             if self.limits[1] == self.tr_nrows and self.r_rem:
                 max_rows += self.r_rem 
             else:
@@ -58,8 +59,10 @@ class CSVProcessor:
                 max_cols += self.c_agr
 
                 
-        #print("min_rows:", min_rows)
-        #print("max_rows:", max_rows)
+        print("min_rows:", min_rows)
+        print("max_rows:", max_rows)
+        if min_rows and max_rows:
+            max_rows -= min_rows
 
         self.res = pd.read_csv(fname,
               sep=';',
@@ -92,6 +95,14 @@ class CSVProcessor:
 
         self._sum(ifrows, ifcols) 
         self._mean(ifrows, ifcols)
+
+        if not ifrows:
+            self.r_agr = 1
+            self.r_rem = 1
+
+        if not ifcols:
+            self.c_agr = 1
+            self.c_rem = 1
 
     
     def get_params(self):
