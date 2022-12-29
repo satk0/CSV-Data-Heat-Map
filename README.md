@@ -6,10 +6,12 @@ The really basic CSV Data to Heat Map Converter.
 
 # To run:
 
-1. `py install -r requirements.txt`
-2. `py src/gui/gui.py`
+1. `pip install -r requirements.txt`
+2. `python src/gui/gui.py`
 
 # Screenshots:
+
+### Covid-19 New Cases CSV Heat Map:
 
 ![Covid-19 New Cases CSV Heat Map](/screenshots/new_covid_cases.png?raw=true "Covid-19 New Cases Data (from 2020 to 2022)")
 
