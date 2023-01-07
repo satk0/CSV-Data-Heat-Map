@@ -54,12 +54,14 @@ class App(tk.Tk):
         self.fname_label.grid(row = 0, column = 0)
         self.info_label = ttk.Label(self.toolbar_frame, text='')
         self.info_label.grid(row = 2, column = 0)
+        self.loading_label = ttk.Label(self.graph_tool_frame, text='Ładowanie...')
 
         # buttons
         self.load_button = ttk.Button(self.toolbar_frame, text='Załaduj plik')
         self.load_button['command'] = self.button_clicked
         self.load_button.grid(row = 1, column = 0)
 
+        # under graph
         self.back_button = ttk.Button(self.graph_tool_frame, text='Cofnij', command=self.back_csv_proc)
 
 
@@ -127,8 +129,10 @@ class App(tk.Tk):
         self.fname = fname
 
         if not back:
+            self.loading_label.grid(row=0, column=0)
             self.csv_processor = CSVProcessor(self.fname, limits, prev_params)
             self.prev_csv_procs.append(self.csv_processor)
+            self.loading_label.grid_forget()
         else:
             del self.prev_csv_procs[-1]
             self.csv_processor = self.prev_csv_procs[-1]
