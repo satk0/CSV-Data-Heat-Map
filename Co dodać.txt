@@ -1,4 +1,0 @@
-*** Zoomowanie danych
-** minimum , maximum
-** wybór funkcji agregujących (min, max)
-*  lepsze GUI

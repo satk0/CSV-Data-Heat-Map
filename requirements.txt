@@ -1,7 +1,6 @@
 aiofiles==22.1.0
 colorama==0.4.6
 contourpy==1.0.6
--e git+ssh://git@github.com/UraxUser/CSV-Data-Heat-Map.git@1229fbbc876d9027379ee4d1259395321d6bb724#egg=csv_processor&subdirectory=src/back
 cycler==0.11.0
 fonttools==4.38.0
 kiwisolver==1.4.4
