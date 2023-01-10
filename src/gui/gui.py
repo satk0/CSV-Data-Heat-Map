@@ -64,6 +64,18 @@ class App(tk.Tk):
         # under graph
         self.back_button = ttk.Button(self.graph_tool_frame, text='Cofnij', command=self.back_csv_proc)
 
+        # combobox
+        self.agregation = tk.StringVar()
+        self.agr_chosen = ttk.Combobox(self.toolbar_frame, width=20, textvariable=self.agregation)
+
+        self.agr_chosen['values'] = ('Suma',
+                                     'Średnia',
+                                     'Max',
+                                     'Min')
+
+        self.agr_chosen.set('Średnia')
+        self.agr_chosen.grid(row=3, column=0)
+
 
 
     def mouse_pressed(self, event):
@@ -113,6 +125,7 @@ class App(tk.Tk):
 
         self.load_heatmap(fname)
 
+        print("agregacja:", self.agregation.get())
 
         self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + fname
         #self.back_button['text'] = "Cofnij"
@@ -165,21 +178,20 @@ class App(tk.Tk):
 
         self.pos = [event.x, self.graph_mes[1] - event.y]
 
-        if 0 in self.origin:
-            self.origin = self.pos.copy()
-            print("origin pos:")
-            print(self.origin)
-
 
         if self.pos[0] < self.graph_rect[0] * self.graph_mes[0]:
             self.pos[0] = self.graph_rect[0] * self.graph_mes[0]
         elif self.pos[0] > self.graph_rect[2] * self.graph_mes[0]:
             self.pos[0] = self.graph_rect[2] * self.graph_mes[0]
-            
         if self.pos[1] < self.graph_rect[1] * self.graph_mes[1]:
             self.pos[1] = self.graph_rect[1] * self.graph_mes[1]
         elif self.pos[1] > self.graph_rect[3] * self.graph_mes[1]:
             self.pos[1] = self.graph_rect[3] * self.graph_mes[1]
+
+        if 0 in self.origin:
+            self.origin = self.pos.copy()
+            print("origin pos:")
+            print(self.origin)
 
         self.mouse_selection()
 
