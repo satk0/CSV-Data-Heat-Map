@@ -134,7 +134,7 @@ class App(tk.Tk):
 
         print("agregacja:", self.agregation.get())
 
-        uganda=Path(fname).stem
+        uganda=pathlib.Path(fname).stem
 
         self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + uganda
         #self.back_button['text'] = "Cofnij"
