@@ -7,7 +7,11 @@ from tkinter import filedialog
 import seaborn as sbn
 import matplotlib
 from matplotlib.patches import Rectangle
-from ..back.csvprocessor import CSVProcessor
+
+import sys
+sys.path.append('/.../src/back')
+
+from csvprocessor import CSVProcessor
 
 matplotlib.use('TkAgg')
 
