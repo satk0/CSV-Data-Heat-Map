@@ -9,9 +9,11 @@ import matplotlib
 from matplotlib.patches import Rectangle
 
 import sys
-sys.path.append('/.../src/back')
+sys.path.append('/Users/rawia/Desktop/Ikony/Studia/sem5/systemy_teleinformatyczne/projekt/CSV-Data-Heat-Map-main/src/back')
 
 from csvprocessor import CSVProcessor
+
+from pathlib import Path
 
 matplotlib.use('TkAgg')
 
@@ -131,7 +133,9 @@ class App(tk.Tk):
 
         print("agregacja:", self.agregation.get())
 
-        self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + fname
+        uganda=Path(fname).stem
+
+        self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + uganda
         #self.back_button['text'] = "Cofnij"
         
     def back_csv_proc(self):
