@@ -7,20 +7,21 @@ from tkinter import filedialog
 import seaborn as sbn
 import matplotlib
 from matplotlib.patches import Rectangle
+import pathlib
+
+knykiec = str(pathlib.Path(__file__).parent.absolute().parent)
+knykiec=knykiec+"/back"
+knykiec=knykiec.replace('\\','/')
 
 import sys
-sys.path.append('/Users/rawia/Desktop/Ikony/Studia/sem5/systemy_teleinformatyczne/projekt/CSV-Data-Heat-Map-main/src/back')
+sys.path.append(knykiec)
 
 from csvprocessor import CSVProcessor
-
-from pathlib import Path
 
 matplotlib.use('TkAgg')
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-import pathlib
 
 from math import ceil, floor
 
