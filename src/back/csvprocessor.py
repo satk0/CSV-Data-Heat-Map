@@ -8,7 +8,8 @@ class CSVProcessor:
     MAX_ROWS = 30
     MAX_COLS = 30
                                            # self.r_agr, self.r_rem, self.c_agr, self.c_rem
-    def __init__(self, fname, limits = [], prev_params = []):
+    def __init__(self, fname, limits = [], prev_params = [], method='mean'):
+        self.method = method
         self.nrows = 0
         self.ncols = 0
         self.r_agr = 1
@@ -19,6 +20,7 @@ class CSVProcessor:
         self.tr_ncols = 0
         self.fname = fname
         self.limits = limits
+        self.prev_params = prev_params
 
         if prev_params:
             self.r_agr = prev_params[0]
@@ -26,6 +28,7 @@ class CSVProcessor:
             self.c_agr = prev_params[2]
             self.c_rem = prev_params[3]
 
+        # check if absolute
         if len(fname.split('/\\')) != 1:
             cur_path = str(pathlib.Path(__file__).parent.absolute())
             fname = cur_path + '/' + fname 
@@ -86,20 +89,16 @@ class CSVProcessor:
 
         print("self.res")
         print(self.res)
-        #print("self.res")
-        #print(self.res)
-                              
-
-        #print("self.res")
-        #print(self.res)
 
         self.nrows, self.ncols = self.res.shape
 
         ifrows = self.nrows > self.MAX_ROWS
         ifcols = self.ncols > self.MAX_COLS
 
-        self._sum(ifrows, ifcols) 
-        self._mean(ifrows, ifcols)
+        self._agr_func(ifrows, ifcols) 
+
+        if (self.method == 'mean'):
+            self._mean(ifrows, ifcols)
 
         if not ifrows:
             self.r_agr = 1
@@ -113,11 +112,14 @@ class CSVProcessor:
     def get_params(self):
         return [self.r_agr, self.r_rem, self.c_agr, self.c_rem]
 
-    def _sum(self, ifrows, ifcols):
+    def _agr_func(self, ifrows, ifcols):
+
+        method_name = 'sum' if self.method == 'mean' else self.method
         if ifrows:
             self.r_agr = ceil(self.nrows / self.MAX_ROWS)
             self.r_rem = self.nrows % self.r_agr
-            self.res = self.res.groupby(self.res.index // self.r_agr).sum()
+            #self.res = self.res.groupby(self.res.index // self.r_agr).sum()
+            self.res = getattr(self.res.groupby(self.res.index // self.r_agr), method_name)()
 
         if not ifcols:
             return
@@ -125,17 +127,20 @@ class CSVProcessor:
         self.c_agr = ceil(self.ncols / self.MAX_COLS)
         self.c_rem = self.ncols % self.c_agr
         cols = self.res.columns.astype(np.int16)
-        self.res = self.res.groupby(cols // self.c_agr, axis=1).sum()
+        #self.res = self.res.groupby(cols // self.c_agr, axis=1).sum()
+        self.res = getattr(self.res.groupby(cols // self.c_agr, axis=1), method_name)()
+
+        if not ifrows and not ifcols:
+            self.tr_nrows, self.tr_ncols = self.nrows, self.ncols
+            return
+
+        self.tr_nrows, self.tr_ncols = self.res.shape
 
 
     def _mean(self, ifrows, ifcols):
 
         # Spaghetti code
-        if not ifrows and not ifcols:
-            self.tr_nrows, self.tr_ncols = self.nrows, self.ncols
-            return
-
-        self.tr_nrows, self.tr_ncols = r, c = self.res.shape
+        r, c = self.tr_nrows, self.tr_ncols 
 
         common_dividor = self.r_agr * self.c_agr
         rt_dividor = common_dividor

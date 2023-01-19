@@ -9,7 +9,7 @@ import matplotlib
 from matplotlib.patches import Rectangle
 import pathlib
 
-from csvprocessor import CSVProcessor
+from ..back.csvprocessor import CSVProcessor
 
 matplotlib.use('TkAgg')
 
@@ -19,6 +19,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from math import ceil, floor
 
 class App(tk.Tk):
+
+    METHODS = {
+        "Średnia": 'mean',
+        "Max": 'max',
+        "Min": 'min',
+        "Suma": 'sum'
+    }
+
     def __init__(self):
         super().__init__()
 
@@ -26,6 +34,8 @@ class App(tk.Tk):
         self.pos = [0, 0]
         self.rec_patch = None
         self.fpath = ''
+
+        self.cur_method = 'mean'
 
         self.origin = [0, 0]
         
@@ -66,7 +76,7 @@ class App(tk.Tk):
 
         # combobox
         self.agregation = tk.StringVar()
-        self.agr_chosen = ttk.Combobox(self.toolbar_frame, width=20, textvariable=self.agregation)
+        self.agr_chosen = ttk.Combobox(self.toolbar_frame, state="readonly",width=20, textvariable=self.agregation)
 
         self.agr_chosen['values'] = ('Suma',
                                      'Średnia',
@@ -74,8 +84,18 @@ class App(tk.Tk):
                                      'Min')
 
         self.agr_chosen.set('Średnia')
-        self.agr_chosen.grid(row=3, column=0)
+        self.agregation.trace('w', self.on_combobox_changed)
 
+
+    def on_combobox_changed(self, *args):
+        chosen = self.agregation.get()
+        self.cur_method = App.METHODS[chosen]
+        # reset
+        # self.prev_csv_procs = []
+        
+        limits, prev_params = self.csv_processor.limits, self.csv_processor.prev_params
+        del self.prev_csv_procs[-1]
+        self.load_heatmap(self.fpath, limits, prev_params)
 
 
     def mouse_pressed(self, event):
@@ -107,6 +127,7 @@ class App(tk.Tk):
 
     def button_clicked(self):
 
+
         if self.rec_patch is not None:
             self.rec_patch.remove()
             self.rec_patch = None
@@ -120,6 +141,8 @@ class App(tk.Tk):
         if not fpath: return
         if fpath == self.fpath: return 
         
+        self.agr_chosen.set('Średnia')
+        self.agr_chosen.grid(row=3, column=0)
         # reset previous processors
         self.prev_csv_procs = []
 
@@ -143,14 +166,16 @@ class App(tk.Tk):
 
         self.fpath = fpath
 
+
         if not back:
             self.loading_label.grid(row=0, column=0)
-            self.csv_processor = CSVProcessor(self.fpath, limits, prev_params)
+            self.csv_processor = CSVProcessor(self.fpath, limits, prev_params, self.cur_method)
             self.prev_csv_procs.append(self.csv_processor)
             self.loading_label.grid_forget()
         else:
             del self.prev_csv_procs[-1]
             self.csv_processor = self.prev_csv_procs[-1]
+
 
         if len(self.prev_csv_procs) > 1:
             self.back_button.grid(row = 0, column = 0)
@@ -190,6 +215,9 @@ class App(tk.Tk):
         elif self.pos[1] > self.graph_rect[3] * self.graph_mes[1]:
             self.pos[1] = self.graph_rect[3] * self.graph_mes[1]
 
+        print("self.pos:")
+        print(self.pos)
+
         if 0 in self.origin:
             self.origin = self.pos.copy()
             print("origin pos:")
@@ -202,6 +230,11 @@ class App(tk.Tk):
 
         self.rect_ox = self.csv_processor.tr_ncols * (self.origin[0] - self.graph_rect[0] * self.graph_mes[0]) 
         self.rect_ox /= ((self.graph_rect[2] - self.graph_rect[0]) * self.graph_mes[0])
+
+        print("self.csv_processor")
+        print(self.csv_processor.tr_nrows)
+        print("self.rect_ox")
+        print(self.rect_ox)
 
         self.rect_oy = self.csv_processor.tr_nrows * (self.origin[1] - self.graph_rect[1] * self.graph_mes[1])
         self.rect_oy /= ((self.graph_rect[3] - self.graph_rect[1]) * self.graph_mes[1])
