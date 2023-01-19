@@ -9,13 +9,6 @@ import matplotlib
 from matplotlib.patches import Rectangle
 import pathlib
 
-knykiec = str(pathlib.Path(__file__).parent.absolute().parent)
-knykiec=knykiec+"/back"
-knykiec=knykiec.replace('\\','/')
-
-import sys
-sys.path.append(knykiec)
-
 from csvprocessor import CSVProcessor
 
 matplotlib.use('TkAgg')
@@ -32,7 +25,7 @@ class App(tk.Tk):
         self.pressed = False
         self.pos = [0, 0]
         self.rec_patch = None
-        self.fname = ''
+        self.fpath = ''
 
         self.origin = [0, 0]
         
@@ -101,7 +94,7 @@ class App(tk.Tk):
         print("min_cols, max_cols")
         print(min_cols, max_cols)
         self.load_heatmap(
-                self.fname,
+                self.fpath,
                 [
                     min_rows, max_rows,
                     min_cols, max_cols
@@ -121,38 +114,38 @@ class App(tk.Tk):
         
             
         cur_path = str(pathlib.Path(__file__).parent.absolute().parent)
-        fname = filedialog.askopenfilename(initialdir = cur_path, 
+        fpath = filedialog.askopenfilename(initialdir = cur_path, 
                                            title = "Wybierz Plik",
                                            filetypes = (("Text files", "*.csv"), ("all files", "*.*")))
-        if not fname: return
-        if fname == self.fname: return 
+        if not fpath: return
+        if fpath == self.fpath: return 
         
         # reset previous processors
         self.prev_csv_procs = []
 
-        self.load_heatmap(fname)
+        self.load_heatmap(fpath)
 
         print("agregacja:", self.agregation.get())
 
-        uganda=pathlib.Path(fname).stem
+        fname = pathlib.Path(fpath).stem
 
-        self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + uganda
+        self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + fname
         #self.back_button['text'] = "Cofnij"
         
     def back_csv_proc(self):
-        self.load_heatmap(fname = self.fname, back = True)
+        self.load_heatmap(fpath = self.fpath, back = True)
                                 # [rmin, rmax, cmin, cmax] # [r_agr, r_rem, c_agr, c_rem]
-    def load_heatmap(self, fname, limits = [], prev_params = [], back = False):
+    def load_heatmap(self, fpath, limits = [], prev_params = [], back = False):
 
-        if self.fname != '':
+        if self.fpath != '':
             for widgets in self.graph_frame.winfo_children():
                   widgets.destroy()
 
-        self.fname = fname
+        self.fpath = fpath
 
         if not back:
             self.loading_label.grid(row=0, column=0)
-            self.csv_processor = CSVProcessor(self.fname, limits, prev_params)
+            self.csv_processor = CSVProcessor(self.fpath, limits, prev_params)
             self.prev_csv_procs.append(self.csv_processor)
             self.loading_label.grid_forget()
         else:
