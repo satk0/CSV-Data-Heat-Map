@@ -142,7 +142,10 @@ class App(tk.Tk):
         if fpath == self.fpath: return 
         
         self.agr_chosen.set('Średnia')
+        self.cur_method = 'mean'
+
         self.agr_chosen.grid(row=3, column=0)
+
         # reset previous processors
         self.prev_csv_procs = []
 
@@ -175,6 +178,11 @@ class App(tk.Tk):
         else:
             del self.prev_csv_procs[-1]
             self.csv_processor = self.prev_csv_procs[-1]
+
+            if (self.csv_processor.method != self.cur_method):
+                limits, prev_params = self.csv_processor.limits, self.csv_processor.prev_params
+                self.csv_processor = CSVProcessor(self.fpath, limits, prev_params, self.cur_method)
+                self.prev_csv_procs[-1] = self.csv_processor
 
 
         if len(self.prev_csv_procs) > 1:
