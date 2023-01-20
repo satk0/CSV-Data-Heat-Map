@@ -60,8 +60,7 @@ class CSVProcessor:
                 max_cols += self.c_rem
             else:
                 max_cols += self.c_agr
-
-                
+         
         print("min_rows:", min_rows)
         print("max_rows:", max_rows)
         if min_rows and max_rows:
@@ -122,6 +121,7 @@ class CSVProcessor:
             self.res = getattr(self.res.groupby(self.res.index // self.r_agr), method_name)()
 
         if not ifcols:
+            self.tr_nrows, self.tr_ncols = self.res.shape
             return
 
         self.c_agr = ceil(self.ncols / self.MAX_COLS)
@@ -130,11 +130,16 @@ class CSVProcessor:
         #self.res = self.res.groupby(cols // self.c_agr, axis=1).sum()
         self.res = getattr(self.res.groupby(cols // self.c_agr, axis=1), method_name)()
 
+        # probably useless code:
+        '''
         if not ifrows and not ifcols:
-            self.tr_nrows, self.tr_ncols = self.nrows, self.ncols
-            return
+           self.tr_nrows, self.tr_ncols = self.nrows, self.ncols
+           return
+        '''
 
         self.tr_nrows, self.tr_ncols = self.res.shape
+        print("CSV_PROC: self.tr_nrows:", self.tr_nrows)
+        print("CSV_PROC: self.tr_ncols:", self.tr_ncols)
 
 
     def _mean(self, ifrows, ifcols):
@@ -155,8 +160,8 @@ class CSVProcessor:
             rt_dividor = self.c_rem * self.r_agr
 
         for i in range(r - 1):
-            print("self.res.values[i]")
-            print(self.res.values[i])
+            # print("self.res.values[i]")
+            # print(self.res.values[i])
             self.res.values[i][-1] /= rt_dividor
 
         # left bottom

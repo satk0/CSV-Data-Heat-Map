@@ -26,9 +26,17 @@ class App(tk.Tk):
         "Min": 'min',
         "Suma": 'sum'
     }
+    COLORS = {
+        "flare": ["rocket", "rocket_r"]
+    }
 
     def __init__(self):
         super().__init__()
+
+
+        self.csv_processor = None
+        self.cur_color = 'flare'
+        self.is_color_reversed = 0
 
         self.pressed = False
         self.pos = [0, 0]
@@ -65,6 +73,7 @@ class App(tk.Tk):
         self.info_label = ttk.Label(self.toolbar_frame, text='')
         self.info_label.grid(row = 2, column = 0)
         self.loading_label = ttk.Label(self.graph_tool_frame, text='Ładowanie...')
+        self.color_label = ttk.Label(self.toolbar_frame, text='Kolor:')
 
         # buttons
         self.load_button = ttk.Button(self.toolbar_frame, text='Załaduj plik')
@@ -73,6 +82,9 @@ class App(tk.Tk):
 
         # under graph
         self.back_button = ttk.Button(self.graph_tool_frame, text='Cofnij', command=self.back_csv_proc)
+
+        self.switch_button = ttk.Button(self.toolbar_frame)
+        self.switch_button['command'] = self.switch_btn_clicked
 
         # combobox
         self.agregation = tk.StringVar()
@@ -87,14 +99,31 @@ class App(tk.Tk):
         self.agregation.trace('w', self.on_combobox_changed)
 
 
+    def switch_btn_clicked(self):
+        if self.is_color_reversed:
+            self.is_color_reversed = 0 
+            self.switch_button['text'] = "Normalny"
+        else: 
+            self.is_color_reversed = 1
+            self.switch_button['text'] = "Odwrócony"
+
+        if self.fpath != '':
+            for widgets in self.graph_frame.winfo_children():
+                  widgets.destroy()
+
+        self._draw_figure()
+
     def on_combobox_changed(self, *args):
         chosen = self.agregation.get()
         self.cur_method = App.METHODS[chosen]
         # reset
         # self.prev_csv_procs = []
+        if not self.csv_processor:
+            return
         
         limits, prev_params = self.csv_processor.limits, self.csv_processor.prev_params
         del self.prev_csv_procs[-1]
+
         self.load_heatmap(self.fpath, limits, prev_params)
 
 
@@ -103,6 +132,8 @@ class App(tk.Tk):
 
     def mouse_released(self, event):
         
+        if not self.csv_processor: return 
+
         rect_y = [self.rect_oy, self.rect_oy + self.rect_height]
         min_rows, max_rows = floor(min(rect_y)), ceil(max(rect_y))
         print("min_rows, max_rows:")
@@ -127,7 +158,6 @@ class App(tk.Tk):
 
     def button_clicked(self):
 
-
         if self.rec_patch is not None:
             self.rec_patch.remove()
             self.rec_patch = None
@@ -142,11 +172,14 @@ class App(tk.Tk):
         if fpath == self.fpath: return 
         
         self.agr_chosen.set('Średnia')
-        self.cur_method = 'mean'
-
         self.agr_chosen.grid(row=3, column=0)
+        self.color_label.grid(row=4, column=0)
+        self.switch_button['text'] = "Normalny"
+        self.switch_button.grid(row=5, column=0)
 
-        # reset previous processors
+        # reset important values 
+        self.cur_method = 'mean'
+        self.is_color_reversed = 0
         self.prev_csv_procs = []
 
         self.load_heatmap(fpath)
@@ -168,6 +201,8 @@ class App(tk.Tk):
                   widgets.destroy()
 
         self.fpath = fpath
+
+        # future idea: if reapeat parameter is to true, repeat heatmap(regenerate)
 
 
         if not back:
@@ -193,6 +228,10 @@ class App(tk.Tk):
         print("self.prev_csv_procs")
         print(self.prev_csv_procs)
 
+        self._draw_figure()
+
+
+    def _draw_figure(self):
         self._create_figure()
 
         self.figure_canvas = FigureCanvasTkAgg(self.figure, self.graph_frame)
@@ -236,6 +275,13 @@ class App(tk.Tk):
 
     def mouse_selection(self):
 
+        if not self.csv_processor:
+            return 
+
+        print("self.csv_processor.tr_ncols:")
+        print(self.csv_processor.tr_ncols)
+        print("self.csv_processor.tr_nrows")
+        print(self.csv_processor.tr_nrows)
         self.rect_ox = self.csv_processor.tr_ncols * (self.origin[0] - self.graph_rect[0] * self.graph_mes[0]) 
         self.rect_ox /= ((self.graph_rect[2] - self.graph_rect[0]) * self.graph_mes[0])
 
@@ -295,6 +341,7 @@ class App(tk.Tk):
         self.info_label.config(text = mtext)
 
     def _create_figure(self):
+        # should not be used alone, better call: self._draw_figure()
         self.figure = Figure(figsize=(self.graph_mes[0]/100, self.graph_mes[1]/100), dpi=100)
         # create axes
         ax_rect = self.graph_rect.copy()
@@ -313,7 +360,13 @@ class App(tk.Tk):
                  ]
         )
 
-        sbn.heatmap(self.csv_processor.res, ax = self.axes, cbar_ax = colorbar_ax)
+        print("cmap:", App.COLORS[self.cur_color][self.is_color_reversed])
+        sbn.heatmap(
+                self.csv_processor.res,
+                cmap = App.COLORS[self.cur_color][self.is_color_reversed],
+                cbar_ax = colorbar_ax,
+                ax = self.axes,
+            )
 
         print("pos:")
         print("bottom-left:")
@@ -322,12 +375,6 @@ class App(tk.Tk):
         print("x = ", self.graph_rect[2] * self.graph_mes[0], "| y = ", self.graph_rect[3] * self.graph_mes[1])
 
 
-        
-
-
-# ODWROCIC Y
-
-# JAK OGARNAC ZEBY SIE NIE DODAWALY WYKRESY NIE POTRZEBNIEEE ! ! ! ! ! !
 if __name__ == "__main__":
     app = App()
     app.mainloop()
