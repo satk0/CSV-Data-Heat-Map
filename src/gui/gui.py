@@ -74,6 +74,7 @@ class App(tk.Tk):
         self.info_label.grid(row = 2, column = 0)
         self.loading_label = ttk.Label(self.graph_tool_frame, text='Ładowanie...')
         self.color_label = ttk.Label(self.toolbar_frame, text='Kolor:')
+        self.save_label = ttk.Label(self.toolbar_frame, text='')
 
         # buttons
         self.load_button = ttk.Button(self.toolbar_frame, text='Załaduj plik')
@@ -83,8 +84,13 @@ class App(tk.Tk):
         # under graph
         self.back_button = ttk.Button(self.graph_tool_frame, text='Cofnij', command=self.back_csv_proc)
 
+        # switch colors button
         self.switch_button = ttk.Button(self.toolbar_frame)
         self.switch_button['command'] = self.switch_btn_clicked
+
+        # save to png file button
+        self.save_button = ttk.Button(self.toolbar_frame)
+        self.save_button['command'] = self.save_btn_clicked
 
         # combobox
         self.agregation = tk.StringVar()
@@ -97,6 +103,10 @@ class App(tk.Tk):
 
         self.agr_chosen.set('Średnia')
         self.agregation.trace('w', self.on_combobox_changed)
+
+    def save_btn_clicked(self):
+        self.figure.savefig(self.fname + '.png')
+        self.save_label['text'] = 'zapisano zdjecie!'
 
 
     def switch_btn_clicked(self):
@@ -176,6 +186,9 @@ class App(tk.Tk):
         self.color_label.grid(row=4, column=0)
         self.switch_button['text'] = "Normalny"
         self.switch_button.grid(row=5, column=0)
+        self.save_button['text'] = "Zapisz"
+        self.save_button.grid(row=6, column=0)
+        self.save_label.grid(row=7, column=0)
 
         # reset important values 
         self.cur_method = 'mean'
@@ -186,7 +199,11 @@ class App(tk.Tk):
 
         print("agregacja:", self.agregation.get())
 
-        fname = pathlib.Path(fpath).stem
+        self.fname = pathlib.Path(fpath).stem
+        fname = self.fname
+        if len(fname) > 35:
+            fname = fname[:16] + '...' + fname[-16:]
+        # 35
 
         self.fname_label['text'] = "Nazwa bieżącego pliku:\n" + fname
         #self.back_button['text'] = "Cofnij"
@@ -232,6 +249,10 @@ class App(tk.Tk):
 
 
     def _draw_figure(self):
+
+        # reset text on button
+        self.save_label['text'] = ''
+        
         self._create_figure()
 
         self.figure_canvas = FigureCanvasTkAgg(self.figure, self.graph_frame)
@@ -320,6 +341,8 @@ class App(tk.Tk):
 
     def heatmap_info(self):
 
+        if not self.csv_processor: return
+
         mtext = "Informacje o heatmapie:\n\n" 
         mtext += "Oryginalnie:\n"
         mtext += "ilosc wierszy: " 
@@ -342,6 +365,8 @@ class App(tk.Tk):
 
     def _create_figure(self):
         # should not be used alone, better call: self._draw_figure()
+        if not self.csv_processor: return
+
         self.figure = Figure(figsize=(self.graph_mes[0]/100, self.graph_mes[1]/100), dpi=100)
         # create axes
         ax_rect = self.graph_rect.copy()
